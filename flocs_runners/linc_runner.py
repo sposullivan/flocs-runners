@@ -273,6 +273,8 @@ class LINCJSONConfig:
                 cmd += ["--slurmArgs", "'" + os.environ["TOIL_SLURM_ARGS"] + "'"]
             if record_stats:
                 cmd += ["--stats"]
+            cmd += ["--no-cwl-default-ram"]
+            cmd += ["--defaultMemory", "8Gi"]
             cmd += ["--no-read-only"]
             cmd += ["--retryCount", "3"]
             cmd += ["--singularity"]
