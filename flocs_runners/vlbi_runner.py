@@ -358,6 +358,13 @@ def delay_calibration(
             parser=cwl_file, help="A delay calibrator catalogue in CSV format."
         ),
     ],
+    image_catalogue: Annotated[
+        str,
+        typer.Option(
+            parser=cwl_file,
+            help="The image catalogue (in FITS or CSV format) containing the target directions.",
+        ),
+    ] = "lotss_catalogue.csv",
     ATeam_skymodel: Annotated[
         Optional[str],
         Option(
