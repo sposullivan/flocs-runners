@@ -270,7 +270,7 @@ class LINCJSONConfig:
             if self.restarting:
                 cmd += ["--restart"]
             if "TOIL_SLURM_ARGS" in os.environ.keys():
-                cmd += ["--slurmArgs", "'" + os.environ["TOIL_SLURM_ARGS"] + "'"]
+                cmd += [f"--slurmArgs='{os.environ['TOIL_SLURM_ARGS']}"]
             if record_stats:
                 cmd += ["--stats"]
             cmd += ["--no-cwl-default-ram"]
