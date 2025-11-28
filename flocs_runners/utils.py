@@ -20,11 +20,7 @@ logger = structlog.getLogger()
 
 
 def extract_obsid_from_ms(ms: str) -> str:
-    inms = os.path.abspath(ms.rstrip())
-    obsid = ct.taql(f"select LOFAR_OBSERVATION_ID from {inms}::OBSERVATION").getcol(
-        "LOFAR_OBSERVATION_ID"
-    )[0]
-    return str(int(obsid) + 2).zfill(len(obsid))
+    return ms.split("_")[0]
 
 
 def cwl_file(entry: str) -> Optional[str]:
