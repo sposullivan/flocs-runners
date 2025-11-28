@@ -39,6 +39,7 @@ class LINCJSONConfig:
         ms_suffix: str = ".MS",
         prefac_h5parm={"path": ""},
         update_version_file: bool = False,
+        outdir: str = os.getcwd(),
     ):
         if "LINC_DATA_ROOT" not in os.environ:
             raise ValueError(
@@ -46,6 +47,7 @@ class LINCJSONConfig:
             )
             sys.exit(-1)
         self.configdict = {}
+        self.outdir = outdir
 
         filedir = os.path.join(mspath, f"*{ms_suffix}")
         logger.info(f"Searching {filedir}")
@@ -160,17 +162,7 @@ class LINCJSONConfig:
             logger.warning("Failed to remove leftover tmpdirs.")
 
         logger.info("Copying results")
-        os.mkdir(f"LINC_{self.mode.value}_L{self.obsid}_{date}")
-        globs = glob.glob(os.path.join(self.rundir, "*"))
-        for f in globs:
-            subprocess.check_output(
-                [
-                    "rsync",
-                    "-avP",
-                    f,
-                    f"LINC_{self.mode.value}_L{self.obsid}_{date}",
-                ]
-            )
+        os.rename(self.rundir, os.path.join(self.outdir, f"LINC_{self.mode.value}_L{self.obsid}_{date}")
 
     def run_workflow(
         self,
@@ -669,6 +661,10 @@ def calibrator(
         str,
         Option(help="Directory to run in."),
     ] = os.getcwd(),
+    outdir: Annotated[
+        str,
+        Option(help="Directory to move outputs to."),
+    ] = os.getcwd(),
     slurm_queue: Annotated[
         str,
         Option(help="Slurm queue to run jobs on."),
@@ -944,6 +940,10 @@ def target(
     rundir: Annotated[
         str,
         Option(help="Directory to run in."),
+    ] = os.getcwd(),
+    outdir: Annotated[
+        str,
+        Option(help="Directory to move outputs to."),
     ] = os.getcwd(),
     slurm_queue: Annotated[
         str,
