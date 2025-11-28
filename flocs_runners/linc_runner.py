@@ -162,7 +162,7 @@ class LINCJSONConfig:
             logger.warning("Failed to remove leftover tmpdirs.")
 
         logger.info("Copying results")
-        os.rename(self.rundir, os.path.join(self.outdir, f"LINC_{self.mode.value}_L{self.obsid}_{date}")
+        os.rename(self.rundir, os.path.join(self.outdir, f"LINC_{self.mode.value}_L{self.obsid}_{date}"))
 
     def run_workflow(
         self,
