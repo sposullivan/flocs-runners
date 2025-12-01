@@ -20,7 +20,7 @@ logger = structlog.getLogger()
 
 
 def extract_obsid_from_ms(ms: str) -> str:
-    return os.path.basename(ms).split("_")[0]
+    return os.path.basename(ms).split("_")[0].lstrip("L")
 
 
 def cwl_file(entry: str) -> Optional[str]:
