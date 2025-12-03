@@ -5,7 +5,7 @@ Runners aiming to make running LOFAR pipelines straightforward and user-friendly
 The runners are simply installed via pip:
 
 ```bash
-pip install git+https://github.com/tikk3r/flocs.git
+pip install git+https://github.com/FLOCSoft/flocs-runners.git
 ```
 
 it is recommended to use a virtual environment for this.
