@@ -256,7 +256,7 @@ class LINCJSONConfig:
                 cmd += ["--slurmTime", slurm_params["time"]]
                 cmd += ["--slurmPartition", slurm_params["queue"]]
             elif scheduler == "singleMachine":
-                cmd += ["--batchSystem", "singleMachine"]
+                cmd += ["--batchSystem", "single_machine"]
             else:
                 raise ValueError(f"Unsupported scheduler `{scheduler}` provided.")
             if self.restarting:
