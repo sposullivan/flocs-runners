@@ -249,7 +249,12 @@ class VLBIJSONConfig:
             cmd += ["--singularity"]
             cmd += ["--disableCaching"]
             cmd += ["--writeLogsFromAllJobs", "True"]
-            cmd += ["--logFile", os.path.join(self.rundir, f"full_log_{self.mode.value}_{self.obsid}.log")]
+            cmd += [
+                "--logFile",
+                os.path.join(
+                    self.rundir, f"full_log_{self.mode.value}_{self.obsid}.log"
+                ),
+            ]
             cmd += ["--writeLogs", os.environ["APPTAINERENV_LOGSDIR"]]
             cmd += ["--outdir", os.environ["APPTAINERENV_RESULTSDIR"]]
             cmd += ["--tmp-outdir-prefix", os.environ["APPTAINERENV_TMPDIR"]]
@@ -276,11 +281,18 @@ class VLBIJSONConfig:
             out = subprocess.check_output(cmd)
 
     def setup_apptainer_variables(self, workdir):
-        out = (
-            subprocess.check_output(["singularity", "--version"])
-            .decode("utf-8")
-            .strip()
-        )
+        try:
+            out = (
+                subprocess.check_output(["singularity", "--version"])
+                .decode("utf-8")
+                .strip()
+            )
+        except subprocess.CalledProcessError:
+            out = (
+                subprocess.check_output(["apptainer", "--version"])
+                .decode("utf-8")
+                .strip()
+            )
         if "apptainer" in out:
             os.environ["APPTAINERENV_VLBI_DATA_ROOT"] = os.environ["VLBI_DATA_ROOT"]
             os.environ["APPTAINERENV_LINC_DATA_ROOT"] = os.environ["LINC_DATA_ROOT"]
@@ -320,8 +332,12 @@ class VLBIJSONConfig:
                 os.mkdir(os.environ["SINGULARITYENV_TMPDIR"])
                 os.mkdir(os.environ["SINGULARITYENV_RESULTSDIR"])
         if "PYTHONPATH" in os.environ:
-            os.environ["PYTHONPATH"] = "$LINC_DATA_ROOT/scripts:" + os.environ["PYTHONPATH"]
-            os.environ["PYTHONPATH"] = "$VLBI_DATA_ROOT/scripts:" + os.environ["PYTHONPATH"]
+            os.environ["PYTHONPATH"] = (
+                "$LINC_DATA_ROOT/scripts:" + os.environ["PYTHONPATH"]
+            )
+            os.environ["PYTHONPATH"] = (
+                "$VLBI_DATA_ROOT/scripts:" + os.environ["PYTHONPATH"]
+            )
         else:
             os.environ["PYTHONPATH"] = "$LINC_DATA_ROOT/scripts"
             os.environ["PYTHONPATH"] = "$VLBI_DATA_ROOT/scripts"
@@ -398,7 +414,8 @@ def delay_calibration(
     phaseup_config: Annotated[
         str,
         typer.Option(
-            parser=cwl_file, help="Settings for the solve to determine phasediff scores."
+            parser=cwl_file,
+            help="Settings for the solve to determine phasediff scores.",
         ),
     ] = os.path.join(os.environ["VLBI_DATA_ROOT"], "phaseup_config.txt"),
     ms_suffix: Annotated[

@@ -319,11 +319,18 @@ class LINCJSONConfig:
                         f.write(e.stderr)
 
     def setup_apptainer_variables(self, workdir):
-        out = (
-            subprocess.check_output(["singularity", "--version"])
-            .decode("utf-8")
-            .strip()
-        )
+        try:
+            out = (
+                subprocess.check_output(["singularity", "--version"])
+                .decode("utf-8")
+                .strip()
+            )
+        except subprocess.CalledProcessError:
+            out = (
+                subprocess.check_output(["apptainer", "--version"])
+                .decode("utf-8")
+                .strip()
+            )
         if "apptainer" in out:
             os.environ["APPTAINERENV_LINC_DATA_ROOT"] = os.environ["LINC_DATA_ROOT"]
             os.environ["APPTAINERENV_RESULTSDIR"] = (
