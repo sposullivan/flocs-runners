@@ -193,7 +193,7 @@ class VLBIJSONConfig:
         if runner == "cwltool":
             cmd = (
                 "cwltool "
-                + "--parllel "
+                + "--parallel "
                 + "--timestamps "
                 + "--disable-pull "
                 + "--singularity "
