@@ -1047,6 +1047,7 @@ def setup(
     config = VLBIJSONConfig(
         args["mspath"],
         ms_suffix=args["ms_suffix"],
+        prefac_h5parm=args["solset"],
     )
     unneeded_keys = [
         "mspath",
