@@ -5,6 +5,7 @@ from .utils import (
     cwl_dir,
     download_skymodel,
     extract_obsid_from_ms,
+    get_container_env_var,
     get_prefactor_freqs,
     obtain_spinifex,
     setup_toil_slurm,
@@ -218,9 +219,9 @@ class LINCJSONConfig:
                 + "--timestamps "
                 + "--disable-pull "
                 + "--singularity "
-                + f"--tmpdir-prefix={os.environ['APPTAINERENV_TMPDIR']} "
-                + f"--outdir={os.environ['APPTAINERENV_RESULTSDIR']} "
-                + f"--log-dir={os.environ['APPTAINERENV_LOGSDIR']} "
+                + f"--tmpdir-prefix={get_container_env_var('TMPDIR')} "
+                + f"--outdir={get_container_env_var('RESULTSDIR')} "
+                + f"--log-dir={get_container_env_var('LOGSDIR')} "
             )
             cmd += (
                 f"{os.environ['LINC_DATA_ROOT']}/workflows/HBA_{self.mode.value}.cwl "
@@ -284,9 +285,9 @@ class LINCJSONConfig:
             cmd += ["--disableCaching"]
             cmd += ["--writeLogsFromAllJobs", "True"]
             cmd += ["--logFile", "full_log.log"]
-            cmd += ["--writeLogs", os.environ["APPTAINERENV_LOGSDIR"]]
-            cmd += ["--outdir", os.environ["APPTAINERENV_RESULTSDIR"]]
-            cmd += ["--tmp-outdir-prefix", os.environ["APPTAINERENV_TMPDIR"]]
+            cmd += ["--writeLogs", get_container_env_var("LOGSDIR")]
+            cmd += ["--outdir", get_container_env_var("RESULTSDIR")]
+            cmd += ["--tmp-outdir-prefix", get_container_env_var("TMPDIR")]
             cmd += ["--jobStore", os.path.join(self.rundir, "jobstore")]
             cmd += ["--workDir", workdir]
             if is_ceph:
@@ -294,12 +295,12 @@ class LINCJSONConfig:
                 subprocess.check_output(["rm", "-r", dir_coordination])
             else:
                 cmd += ["--coordinationDir", dir_coordination]
-            cmd += ["--tmpdir-prefix", os.environ["APPTAINERENV_TMPDIR"]]
+            cmd += ["--tmpdir-prefix", get_container_env_var("TMPDIR")]
             cmd += ["--disableAutoDeployment", "True"]
             cmd += ["--bypass-file-store"]
             cmd += [
                 "--batchLogsDir",
-                os.path.join(os.environ["APPTAINERENV_LOGSDIR"], dir_slurmlogs),
+                os.path.join(get_container_env_var("LOGSDIR"), dir_slurmlogs),
             ]
             cmd += ["--no-compute-checksum"]
             cmd += [
@@ -424,7 +425,7 @@ class LINCJSONConfig:
         except FileExistsError:
             print("Coordination directory already exists, not overwriting.")
 
-        dir_slurmlogs = os.path.join(os.environ["APPTAINERENV_LOGSDIR"], "slurmlogs")
+        dir_slurmlogs = os.path.join(get_container_env_var("LOGSDIR"), "slurmlogs")
         try:
             os.mkdir(dir_slurmlogs)
         except FileExistsError:

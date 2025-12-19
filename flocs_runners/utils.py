@@ -106,7 +106,9 @@ def get_prefactor_freqs(solname: str = "solutions.h5", solset: str = "target") -
     sols = h5parm(solname)
     ss = sols.getSolset(solset)
     st_names = ss.getSoltabNames()
-    ph_sol_name = [xx for xx in st_names if ("extract" not in xx) and ("spinifex" not in xx)][0]
+    ph_sol_name = [
+        xx for xx in st_names if ("extract" not in xx) and ("spinifex" not in xx)
+    ][0]
     st = ss.getSoltab(ph_sol_name)
     freqs = st.getAxisValues("freq")
     freqstep = 1953125.0  ## the value for 10 subbands
@@ -256,3 +258,22 @@ def download_skymodel(
         shell=True,
     )
     return filename
+
+
+def get_container_env_var(var: str) -> str:
+    """Get an environment variable from either SINGULARITYENV_* or APPTAINERENV_*.
+
+    Args:
+        var: the suffix of the variable to look for. For example TMPDIR if you want the value of APPTAINERENV_TMPDIR.
+
+    Returns:
+        The value of the corresponding variable, or an empty string if it is not defined.
+    """
+    sing_var = f"SINGULARITYENV_{var}"
+    app_var = f"APPTAINERENV_{var}"
+    if sing_var in os.environ.keys():
+        return os.environ[sing_var]
+    elif app_var in os.environ.keys():
+        return os.environ[app_var]
+    else:
+        return ""

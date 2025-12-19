@@ -4,6 +4,7 @@ from .utils import (
     cwl_file,
     cwl_dir,
     extract_obsid_from_ms,
+    get_container_env_var,
     get_prefactor_freqs,
     setup_toil_slurm,
     verify_slurm_environment_toil,
@@ -275,21 +276,21 @@ class VLBIJSONConfig:
                     self.rundir, f"full_log_{self.mode.value}_{self.obsid}.log"
                 ),
             ]
-            cmd += ["--writeLogs", os.environ["APPTAINERENV_LOGSDIR"]]
-            cmd += ["--outdir", os.environ["APPTAINERENV_RESULTSDIR"]]
-            cmd += ["--tmp-outdir-prefix", os.environ["APPTAINERENV_TMPDIR"]]
+            cmd += ["--writeLogs", get_container_env_var("LOGSDIR")]
+            cmd += ["--outdir", get_container_env_var("RESULTSDIR")]
+            cmd += ["--tmp-outdir-prefix", get_container_env_var("TMPDIR")]
             cmd += ["--jobStore", os.path.join(self.rundir, "jobstore")]
             cmd += ["--workDir", workdir]
             if is_ceph:
                 logger.info("Detected CEPH file system, not setting coordinationDir.")
             else:
                 cmd += ["--coordinationDir", dir_coordination]
-            cmd += ["--tmpdir-prefix", os.environ["APPTAINERENV_TMPDIR"]]
+            cmd += ["--tmpdir-prefix", get_container_env_var("TMPDIR")]
             cmd += ["--disableAutoDeployment", "True"]
             cmd += ["--bypass-file-store"]
             cmd += [
                 "--batchLogsDir",
-                os.path.join(os.environ["APPTAINERENV_LOGSDIR"], dir_slurmlogs),
+                os.path.join(get_container_env_var("LOGSDIR"), dir_slurmlogs),
             ]
             cmd += ["--no-compute-checksum"]
             cmd += [
@@ -362,7 +363,7 @@ class VLBIJSONConfig:
             os.environ["PYTHONPATH"] = "$LINC_DATA_ROOT/scripts"
             os.environ["PYTHONPATH"] = "$VLBI_DATA_ROOT/scripts"
         os.environ["PATH"] = (
-            os.environ["APPTAINERENV_PREPEND_PATH"] + ":" + os.environ["PATH"]
+            get_container_env_var("PREPEND_PATH") + ":" + os.environ["PATH"]
         )
 
     def setup_toil_directories(self, workdir: str) -> tuple[str, str]:
@@ -372,7 +373,7 @@ class VLBIJSONConfig:
         except FileExistsError:
             print("Coordination directory already exists, not overwriting.")
 
-        dir_slurmlogs = os.path.join(os.environ["APPTAINERENV_LOGSDIR"], "slurmlogs")
+        dir_slurmlogs = os.path.join(get_container_env_var("LOGSDIR"), "slurmlogs")
         try:
             os.mkdir(dir_slurmlogs)
         except FileExistsError:
