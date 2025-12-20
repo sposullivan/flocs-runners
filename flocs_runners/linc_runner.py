@@ -23,7 +23,7 @@ import tempfile
 from time import gmtime, strftime
 import typer
 from enum import Enum
-from typer import Argument, Option
+from cyclopts import App, Parameter
 from typing import List, Optional, Tuple
 from typing_extensions import Annotated
 
@@ -442,63 +442,62 @@ if "LINC_DATA_ROOT" not in os.environ:
     )
     sys.exit(-1)
 
-app = typer.Typer(add_completion=False)
+app = App(group="LOFAR")
 
 
 @app.command()
 def calibrator(
-    mspath: Annotated[str, Argument(help="Directory where MSes are located.")],
+    mspath: Annotated[str, Parameter(help="Directory where MSes are located.")],
     ms_suffix: Annotated[
-        str, Option(help="Extension to look for when searching `mspath` for MSes.")
+        str, Parameter(help="Extension to look for when searching `mspath` for MSes.")
     ] = ".MS",
     save_raw_solutions: Annotated[
         bool,
-        Option(
+        Parameter(
             help="Save the intermediate, raw solution tables for (bandpass, faraday, ion, polalign)."
         ),
     ] = False,
     update_version_file: Annotated[
         bool,
-        Option(help="Overwrite the $LINC_DATA_ROOT/.versions file if it exists."),
+        Parameter(help="Overwrite the $LINC_DATA_ROOT/.versions file if it exists."),
     ] = False,
     refant: Annotated[
         str,
-        Option(
+        Parameter(
             help="Regular expression of the statoins that are allowed to be selected as a reference antenna by the pipeline."
         ),
     ] = "CS00.*",
     # Silly workaround until typer starts supporting defaults for this type of input.
     flag_baselines: Annotated[
         Optional[List[str]],
-        Option(
+        Parameter(
             help="DP3-compatible pattern for baselines or stations to be flagged (may  be an empty list).",
         ),
     ] = None,
     process_baselines_cal: Annotated[
         str,
-        Option(
+        Parameter(
             help="Performs A-Team-clipping/demixing and direction-independent phase-only self-calibration only on these baselines. Choose [CR]S*& if you want to process only cross-correlations and remove international stations."
         ),
     ] = "*&",
     filter_baselines: Annotated[
         str,
-        Option(
+        Parameter(
             help="Selects only this set of baselines to be processed. Choose [CR]S*& if you want to process only cross-correlations and remove international stations."
         ),
     ] = "*&",
     fit_offset_PA: Annotated[
         bool,
-        Option(
+        Parameter(
             help="Assume that together with a delay each station also has a differential phase offset (important for old LBA observatoins)."
         ),
     ] = False,
     do_smooth: Annotated[
-        bool, Option(help="Enable or disable baseline-based smoothing.")
+        bool, Parameter(help="Enable or disable baseline-based smoothing.")
     ] = False,
     rfistrategy: Annotated[
-        str,
-        Option(
-            parser=cwl_file,
+        cwl_file,
+        Parameter(
             help="Path to the RFI flagging strategy to use with AOFlagger.",
         ),
     ] = os.path.join(
@@ -506,211 +505,206 @@ def calibrator(
     ),
     max2interpolate: Annotated[
         int,
-        Option(
+        Parameter(
             help="Amount of channels in which interpolation should be performed for deriving the bandpass."
         ),
     ] = 30,
     ampRange: Annotated[
         Tuple[float, float],
-        Option(help="Range of median amplitudes accepted per station."),
+        Parameter(help="Range of median amplitudes accepted per station."),
     ] = (0, 0),
     skip_international: Annotated[
         bool,
-        Option(
+        Parameter(
             help="Skip fitting the bandpass for international stations (this avoids flagging them in many cases)."
         ),
     ] = True,
     raw_data: Annotated[
-        bool, Option(help="Use autoweight. Set to True in case you are using raw data.")
+        bool,
+        Parameter(help="Use autoweight. Set to True in case you are using raw data."),
     ] = False,
     propagatesolutions: Annotated[
         bool,
-        Option(
+        Parameter(
             help="Use already derived solutions as initial guess for the upcoming timeslot."
         ),
     ] = True,
     flagunconverged: Annotated[
         bool,
-        Option(
+        Parameter(
             help="Flag solutions for solves that did not converge (if they were also detected to diverge)."
         ),
     ] = False,
     maxStddev: Annotated[
         float,
-        Option(
+        Parameter(
             help="Maximum allowable standard deviation when outlier clipping is done. For phases, this should value should be in radians, for amplitudes in log(amp). If None (or negative), a value of 0.1 rad is used for phases and 0.01 for amplitudes."
         ),
     ] = -1.0,
     solutions2transfer: Annotated[
-        Optional[str],
-        Option(
-            metavar="H5PARM",
-            parser=cwl_file,
+        Optional[cwl_file],
+        Parameter(
             help="Provide own solutions from a reference calibrator observation in the case calibrator source is not trusted.",
         ),
     ] = "null",
     antennas2transfer: Annotated[
         str,
-        Option(
+        Parameter(
             help="DP3-compatible baseline patterm for those stations wh should get calibration solutoins from a reference solution set in case calibrator source is not trusted."
         ),
     ] = "[FUSPID].*",
     do_transfer: Annotated[
         bool,
-        Option(help="Enable solutions transfer for non-trusted calibrator sources."),
+        Parameter(help="Enable solutions transfer for non-trusted calibrator sources."),
     ] = False,
-    demix_sources: Annotated[List[str], Option(help="Sources to demix.")] = [
+    demix_sources: Annotated[List[str], Parameter(help="Sources to demix.")] = [
         "VirA_Gaussian",
         "CygA_Gaussian",
         "CasA_Gaussian",
         "TauA_Gaussian",
     ],
     demix_freqres: Annotated[
-        str, Option(help="Frequency resolution used when demixing.")
+        str, Parameter(help="Frequency resolution used when demixing.")
     ] = "48.82kHz",
     demix_timeres: Annotated[
-        float, Option(help="Time resolution used when demixing.")
+        float, Parameter(help="Time resolution used when demixing.")
     ] = 10.0,
     demix: Annotated[
         Optional[bool],
-        Option(
+        Parameter(
             help="If true force demixing using all sources of demix_sources, if false do not demix (if null, automatically determines sources to be demixed according to min_separation)."
         ),
     ] = None,
     ion_3rd: Annotated[
         bool,
-        Option(
+        Parameter(
             help="take into account also 3rd-order effects for the clock-TEC separation."
         ),
     ] = False,
     clock_smooth: Annotated[
         bool,
-        Option(
+        Parameter(
             help="Only take the median of the derived clock solutions (enable this in case of non-joint observations)."
         ),
     ] = True,
-    tables2export: Annotated[str, Option()] = "clock",
+    tables2export: Annotated[str, Parameter()] = "clock",
     max_dp3_threads: Annotated[
-        int, Option(help="Number of threads per process for DP3.")
+        int, Parameter(help="Number of threads per process for DP3.")
     ] = 10,
     memoryperc: Annotated[
         int,
-        Option(
+        Parameter(
             help="Maximum of memory used for aoflagger in raw_flagging mode in percent."
         ),
     ] = 20,
-    min_separation: Annotated[int, Option()] = 30,
+    min_separation: Annotated[int, Parameter()] = 30,
     max_separation_arcmin: Annotated[
         float,
-        Option(
+        Parameter(
             help="Maximum separation between phase center of the observation and the patch of a calibrator skymodel which is accepted to be chosen as a skymodel."
         ),
     ] = 1.0,
     calibrator_path_skymodel: Annotated[
-        Optional[str],
-        Option(
-            parser=cwl_dir,
-            metavar="DIRECTORY",
+        Optional[cwl_dir],
+        Parameter(
             help="Directory where calibrator skymodels are located.",
         ),
     ] = os.path.join(os.environ["LINC_DATA_ROOT"], "skymodels"),
     A_Team_skymodel: Annotated[
-        Optional[str],
-        Option(
-            parser=cwl_file,
-            metavar="SKYMODEL",
+        Optional[cwl_file],
+        Parameter(
             help="File path to the A-Team skymodel.",
         ),
     ] = os.path.join(os.environ["LINC_DATA_ROOT"], "skymodels", "A-Team.skymodel"),
     avg_timeresolution: Annotated[
         int,
-        Option(
+        Parameter(
             help="Intermediate time resolution of the data in seconds after averaging."
         ),
     ] = 4,
     avg_freqresolution: Annotated[
         str,
-        Option(
+        Parameter(
             help="Intermediate frequency resolution of the data in seconds after averaging."
         ),
     ] = "48.82kHz",
     bandpass_freqresolution: Annotated[
-        str, Option(help="Frequency resolution of the bandpass solution table.")
+        str, Parameter(help="Frequency resolution of the bandpass solution table.")
     ] = "195.3125kHz",
     lbfgs_historysize: Annotated[
         int,
-        Option(
+        Parameter(
             help="For the LBFGS solver: the history size, specified as a multiple of the parameter vector, to use to approximate the inverse Hessian."
         ),
     ] = 10,
     lbfgs_robustdof: Annotated[
         int,
-        Option(
+        Parameter(
             help="For the LBFGS solver: the degrees of freedom (DOF) given to the noise model."
         ),
     ] = 200,
     aoflag_reorder: Annotated[
         bool,
-        Option(
+        Parameter(
             help="Make aoflagger reorder the measurement set before running the detection. This prevents that aoflagger will use its memory reading mode, which is faster but uses more memory."
         ),
     ] = False,
     aoflag_chunksize: Annotated[
         int,
-        Option(
+        Parameter(
             help="Split the set into intervals with the given maximum size, and flag each interval independently. This lowers the amount of memory required."
         ),
     ] = 2000,
     solveralgorithm: Annotated[
-        str, Option(help="Solver algorithm for DP3 to use.")
+        str, Parameter(help="Solver algorithm for DP3 to use.")
     ] = "directioniterative",
     config_only: Annotated[
         bool,
-        Option(help="Only generate the config file, do not run it."),
+        Parameter(help="Only generate the config file, do not run it."),
     ] = False,
     scheduler: Annotated[
         str,
-        Option(help="System scheduler to use."),
+        Parameter(help="System scheduler to use."),
     ] = "singleMachine",
     runner: Annotated[
         str,
-        Option(help="CWL runner to use."),
+        Parameter(help="CWL runner to use."),
     ] = "cwltool",
     rundir: Annotated[
         str,
-        Option(help="Directory to run in."),
+        Parameter(help="Directory to run in."),
     ] = os.getcwd(),
     outdir: Annotated[
         str,
-        Option(help="Directory to move outputs to."),
+        Parameter(help="Directory to move outputs to."),
     ] = os.getcwd(),
     slurm_queue: Annotated[
         str,
-        Option(help="Slurm queue to run jobs on."),
+        Parameter(help="Slurm queue to run jobs on."),
     ] = "",
     slurm_account: Annotated[
         str,
-        Option(help="Slurm account to use."),
+        Parameter(help="Slurm account to use."),
     ] = "",
     slurm_time: Annotated[
         str,
-        Option(help="Slurm time limit to use."),
+        Parameter(help="Slurm time limit to use."),
     ] = "",
     slurm_cores: Annotated[
         int,
-        Option(help="Number of cores to reserve for a monolithic pipeline run."),
+        Parameter(help="Number of cores to reserve for a monolithic pipeline run."),
     ] = 32,
     container: Annotated[
         str,
-        Option(help="Apptainer container to use for cwltool runs."),
+        Parameter(help="Apptainer container to use for cwltool runs."),
     ] = "",
     restart: Annotated[
         bool,
-        Option(help="Restart a Toil workflow from the given rundir."),
+        Parameter(help="Restart a Toil workflow from the given rundir."),
     ] = False,
     record_toil_stats: Annotated[
         bool,
-        Option(
+        Parameter(
             help="Use Toil's stats flag to record statistics. N.B. this disables cleanup of successful steps; make sure there is enough disk space until the end of the run."
         ),
     ] = False,
@@ -765,238 +759,223 @@ def calibrator(
 
 @app.command()
 def target(
-    mspath: Annotated[str, Argument(help="Directory where MSes are located.")],
-    cal_solutions: Annotated[
-        str, typer.Argument(parser=cwl_file, help="Calibration solutions file.")
-    ],
+    mspath: Annotated[str, Parameter(help="Directory where MSes are located.")],
+    cal_solutions: Annotated[cwl_file, Parameter(help="Calibration solutions file.")],
     ms_suffix: Annotated[
-        str, Option(help="Extension to look for when searching `mspath` for MSes.")
+        str, Parameter(help="Extension to look for when searching `mspath` for MSes.")
     ] = ".MS",
     update_version_file: Annotated[
         bool,
-        Option(help="Overwrite the $LINC_DATA_ROOT/.versions file if it exists."),
+        Parameter(help="Overwrite the $LINC_DATA_ROOT/.versions file if it exists."),
     ] = False,
-    refant: Annotated[
-        Optional[str], typer.Option(help="Reference antenna.")
-    ] = "CS00.*",
+    refant: Annotated[Optional[str], Parameter(help="Reference antenna.")] = "CS00.*",
     flag_baselines: Annotated[
-        Optional[List[str]], typer.Option(help="Baselines to flag.")
+        Optional[List[str]], Parameter(help="Baselines to flag.")
     ] = [],
     process_baselines_target: Annotated[
-        Optional[str], typer.Option(help="Target baselines to process.")
+        Optional[str], Parameter(help="Target baselines to process.")
     ] = "[CR]S*&",
     filter_baselines: Annotated[
-        Optional[str], typer.Option(help="Baselines to filter.")
+        Optional[str], Parameter(help="Baselines to filter.")
     ] = "[CR]S*&",
-    do_smooth: Annotated[
-        Optional[bool], typer.Option(help="Enable smoothing.")
-    ] = False,
+    do_smooth: Annotated[Optional[bool], Parameter(help="Enable smoothing.")] = False,
     rfistrategy: Annotated[
-        Optional[str], typer.Option(parser=cwl_file, help="RFI strategy file or name.")
+        Optional[cwl_file], Parameter(help="RFI strategy file or name.")
     ] = os.path.join(
         f"{os.environ['LINC_DATA_ROOT']}", "rfistrategies", "lofar-hba-wideband.lua"
     ),
     min_unflagged_fraction: Annotated[
-        Optional[float], typer.Option(help="Minimum unflagged fraction.")
+        Optional[float], Parameter(help="Minimum unflagged fraction.")
     ] = 0.5,
     compression_bitrate: Annotated[
-        Optional[int], typer.Option(help="Compression bitrate.")
+        Optional[int], Parameter(help="Compression bitrate.")
     ] = 16,
-    raw_data: Annotated[Optional[bool], typer.Option(help="Use raw data.")] = False,
+    raw_data: Annotated[Optional[bool], Parameter(help="Use raw data.")] = False,
     propagatesolutions: Annotated[
-        Optional[bool], typer.Option(help="Propagate calibration solutions.")
+        Optional[bool], Parameter(help="Propagate calibration solutions.")
     ] = True,
     maxStddev: Annotated[
-        Optional[float], typer.Option(help="Maximum standard deviation.")
+        Optional[float], Parameter(help="Maximum standard deviation.")
     ] = -1.0,
     demix_sources: Annotated[
-        Optional[List[str]], typer.Option(help="Sources to demix.")
+        Optional[List[str]], Parameter(help="Sources to demix.")
     ] = ["VirA_Gaussian", "CygA_Gaussian", "CasA_Gaussian", "TauA_Gaussian"],
     demix_timeres: Annotated[
-        Optional[float], typer.Option(help="Demix time resolution.")
+        Optional[float], Parameter(help="Demix time resolution.")
     ] = None,
     demix_freqres: Annotated[
-        Optional[str], typer.Option(help="Demix frequency resolution.")
+        Optional[str], Parameter(help="Demix frequency resolution.")
     ] = None,
     demix_maxiter: Annotated[
-        Optional[int], typer.Option(help="Maximum demix iterations.")
+        Optional[int], Parameter(help="Maximum demix iterations.")
     ] = None,
-    demix: Annotated[Optional[bool], typer.Option(help="Enable demixing.")] = None,
+    demix: Annotated[Optional[bool], Parameter(help="Enable demixing.")] = None,
     apply_tec: Annotated[
-        Optional[bool], typer.Option(help="Apply TEC correction.")
+        Optional[bool], Parameter(help="Apply TEC correction.")
     ] = False,
     apply_clock: Annotated[
-        Optional[bool], typer.Option(help="Apply clock correction.")
+        Optional[bool], Parameter(help="Apply clock correction.")
     ] = True,
     apply_phase: Annotated[
-        Optional[bool], typer.Option(help="Apply phase correction.")
+        Optional[bool], Parameter(help="Apply phase correction.")
     ] = False,
-    apply_RM: Annotated[
-        Optional[bool], typer.Option(help="Apply RM correction.")
-    ] = True,
-    get_RM: Annotated[Optional[bool], typer.Option(help="Estimate RM.")] = True,
+    apply_RM: Annotated[Optional[bool], Parameter(help="Apply RM correction.")] = True,
+    get_RM: Annotated[Optional[bool], Parameter(help="Estimate RM.")] = True,
     apply_beam: Annotated[
-        Optional[bool], typer.Option(help="Apply beam correction.")
+        Optional[bool], Parameter(help="Apply beam correction.")
     ] = True,
     gsmcal_step: Annotated[
-        Optional[str], typer.Option(help="GSM calibration step.")
+        Optional[str], Parameter(help="GSM calibration step.")
     ] = "phase",
-    updateweights: Annotated[
-        Optional[bool], typer.Option(help="Update weights.")
-    ] = True,
+    updateweights: Annotated[Optional[bool], Parameter(help="Update weights.")] = True,
     max_dp3_threads: Annotated[
-        Optional[int], typer.Option(help="Maximum DP3 threads.")
+        Optional[int], Parameter(help="Maximum DP3 threads.")
     ] = 10,
-    memoryperc: Annotated[Optional[int], typer.Option(help="Memory percentage.")] = 20,
+    memoryperc: Annotated[Optional[int], Parameter(help="Memory percentage.")] = 20,
     min_separation: Annotated[
-        Optional[int], typer.Option(help="Minimum separation.")
+        Optional[int], Parameter(help="Minimum separation.")
     ] = 30,
     min_probability: Annotated[
-        Optional[float], typer.Option(help="Minimum probability.")
+        Optional[float], Parameter(help="Minimum probability.")
     ] = 0.5,
     A_Team_skymodel: Annotated[
-        Optional[str],
-        Option(
-            parser=cwl_file,
-            metavar="SKYMODEL",
+        Optional[cwl_file],
+        Parameter(
             help="File path to the A-Team skymodel.",
         ),
     ] = os.path.join(os.environ["LINC_DATA_ROOT"], "skymodels", "A-Team.skymodel"),
     target_skymodel: Annotated[
-        Optional[str], typer.Option(parser=cwl_file, help="Target sky model.")
+        Optional[cwl_file], Parameter(help="Target sky model.")
     ] = None,
     use_target: Annotated[
-        Optional[bool], typer.Option(help="Use target sky model.")
+        Optional[bool], Parameter(help="Use target sky model.")
     ] = True,
     skymodel_source: Annotated[
-        Optional[str], typer.Option(help="Skymodel source.")
+        Optional[str], Parameter(help="Skymodel source.")
     ] = "TGSS",
     avg_timeresolution: Annotated[
-        Optional[int], typer.Option(help="Averaging time resolution.")
+        Optional[int], Parameter(help="Averaging time resolution.")
     ] = 4,
     avg_freqresolution: Annotated[
-        Optional[str], typer.Option(help="Averaging frequency resolution.")
+        Optional[str], Parameter(help="Averaging frequency resolution.")
     ] = "48.82kHz",
     avg_timeresolution_concat: Annotated[
-        Optional[int], typer.Option(help="Concat averaging time resolution.")
+        Optional[int], Parameter(help="Concat averaging time resolution.")
     ] = 8,
     avg_freqresolution_concat: Annotated[
-        Optional[str], typer.Option(help="Concat averaging frequency resolution.")
+        Optional[str], Parameter(help="Concat averaging frequency resolution.")
     ] = "97.64kHz",
     num_SBs_per_group: Annotated[
-        Optional[int], typer.Option(help="Number of SBs per group.")
+        Optional[int], Parameter(help="Number of SBs per group.")
     ] = None,
-    calib_nchan: Annotated[
-        Optional[int], typer.Option(help="Calibration channels.")
-    ] = 1,
+    calib_nchan: Annotated[Optional[int], Parameter(help="Calibration channels.")] = 1,
     reference_stationSB: Annotated[
-        Optional[int], typer.Option(help="Reference station SB.")
+        Optional[int], Parameter(help="Reference station SB.")
     ] = None,
-    clip_sources: Annotated[
-        Optional[List[str]], typer.Option(help="Sources to clip.")
-    ] = ["VirA_Gaussian", "CygA_Gaussian", "CasA_Gaussian", "TauA_Gaussian"],
-    clipAteam: Annotated[
-        Optional[bool], typer.Option(help="Clip A-Team sources.")
-    ] = True,
+    clip_sources: Annotated[Optional[List[str]], Parameter(help="Sources to clip.")] = [
+        "VirA_Gaussian",
+        "CygA_Gaussian",
+        "CasA_Gaussian",
+        "TauA_Gaussian",
+    ],
+    clipAteam: Annotated[Optional[bool], Parameter(help="Clip A-Team sources.")] = True,
     lbfgs_historysize: Annotated[
-        Optional[int], typer.Option(help="LBFGS history size.")
+        Optional[int], Parameter(help="LBFGS history size.")
     ] = None,
     lbfgs_robustdof: Annotated[
-        Optional[float], typer.Option(help="LBFGS robust DOF.")
+        Optional[float], Parameter(help="LBFGS robust DOF.")
     ] = None,
     aoflag_reorder: Annotated[
-        Optional[bool], typer.Option(help="Reorder AOFlagger.")
+        Optional[bool], Parameter(help="Reorder AOFlagger.")
     ] = False,
     aoflag_chunksize: Annotated[
-        Optional[int], typer.Option(help="AOFlagger chunk size.")
+        Optional[int], Parameter(help="AOFlagger chunk size.")
     ] = 2000,
     aoflag_freqconcat: Annotated[
-        Optional[bool], typer.Option(help="AOFlagger frequency concatenation.")
+        Optional[bool], Parameter(help="AOFlagger frequency concatenation.")
     ] = True,
     selfcal: Annotated[
-        Optional[bool], typer.Option(help="Enable self-calibration.")
+        Optional[bool], Parameter(help="Enable self-calibration.")
     ] = False,
     selfcal_strategy: Annotated[
-        Optional[str], typer.Option(help="Self-calibration strategy.")
+        Optional[str], Parameter(help="Self-calibration strategy.")
     ] = "HBA",
     selfcal_hba_imsize: Annotated[
-        Optional[List[int]], typer.Option(help="Selfcal HBA image size.")
+        Optional[List[int]], Parameter(help="Selfcal HBA image size.")
     ] = [20000, 20000],
     hba_uvlambdamin: Annotated[
-        Optional[float], typer.Option(help="HBA uv lambda minimum.")
+        Optional[float], Parameter(help="HBA uv lambda minimum.")
     ] = 200.0,
     selfcal_region: Annotated[
-        Optional[str], typer.Option(parser=cwl_file, help="Selfcal region file.")
+        Optional[cwl_file], Parameter(help="Selfcal region file.")
     ] = None,
-    chunkduration: Annotated[
-        Optional[float], typer.Option(help="Chunk duration.")
-    ] = 0.0,
+    chunkduration: Annotated[Optional[float], Parameter(help="Chunk duration.")] = 0.0,
     wsclean_tmpdir: Annotated[
-        Optional[str], typer.Option(help="WSClean temporary directory.")
+        Optional[str], Parameter(help="WSClean temporary directory.")
     ] = None,
     make_structure_plot: Annotated[
-        Optional[bool], typer.Option(help="Make structure plot.")
+        Optional[bool], Parameter(help="Make structure plot.")
     ] = False,
     skymodel_fluxlimit: Annotated[
-        Optional[float], typer.Option(help="Skymodel flux limit.")
+        Optional[float], Parameter(help="Skymodel flux limit.")
     ] = None,
     output_fullres_data: Annotated[
-        Optional[bool], typer.Option(help="Output full-resolution data.")
+        Optional[bool], Parameter(help="Output full-resolution data.")
     ] = False,
     solveralgorithm: Annotated[
-        str, Option(help="Solver algorithm for DP3 to use.")
+        str, Parameter(help="Solver algorithm for DP3 to use.")
     ] = "directioniterative",
     config_only: Annotated[
         bool,
-        Option(help="Only generate the config file, do not run it."),
+        Parameter(help="Only generate the config file, do not run it."),
     ] = False,
     scheduler: Annotated[
         str,
-        Option(help="System scheduler to use."),
+        Parameter(help="System scheduler to use."),
     ] = "singleMachine",
     runner: Annotated[
         str,
-        Option(help="CWL runner to use."),
+        Parameter(help="CWL runner to use."),
     ] = "cwltool",
     rundir: Annotated[
         str,
-        Option(help="Directory to run in."),
+        Parameter(help="Directory to run in."),
     ] = os.getcwd(),
     outdir: Annotated[
         str,
-        Option(help="Directory to move outputs to."),
+        Parameter(help="Directory to move outputs to."),
     ] = os.getcwd(),
     slurm_queue: Annotated[
         str,
-        Option(help="Slurm queue to run jobs on."),
+        Parameter(help="Slurm queue to run jobs on."),
     ] = "",
     slurm_account: Annotated[
         str,
-        Option(help="Slurm account to use."),
+        Parameter(help="Slurm account to use."),
     ] = "",
     slurm_time: Annotated[
         str,
-        Option(help="Slurm time limit to use."),
+        Parameter(help="Slurm time limit to use."),
     ] = "24:00:00",
     slurm_cores: Annotated[
         int,
-        Option(help="Number of cores to reserve for a monolithic pipeline run."),
+        Parameter(help="Number of cores to reserve for a monolithic pipeline run."),
     ] = 32,
     container: Annotated[
         str,
-        Option(help="Apptainer container to use for cwltool runs."),
+        Parameter(help="Apptainer container to use for cwltool runs."),
     ] = "",
     offline_workers: Annotated[
         bool,
-        Option(help="Indicates that the worker nodes do not have internet access."),
+        Parameter(help="Indicates that the worker nodes do not have internet access."),
     ] = False,
     restart: Annotated[
         bool,
-        Option(help="Restart a Toil workflow from the given rundir."),
+        Parameter(help="Restart a Toil workflow from the given rundir."),
     ] = False,
     record_toil_stats: Annotated[
         bool,
-        Option(
+        Parameter(
             help="Use Toil's stats flag to record statistics. N.B. this disables cleanup of successful steps; make sure there is enough disk space until the end of the run."
         ),
     ] = False,

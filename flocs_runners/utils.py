@@ -55,20 +55,10 @@ def check_dd_freq(msin: str, freq_array: Union[list, np.ndarray]) -> bool:
         True if input frequencies are covered, False if input has frequencies that fall outside freq_array.
     """
     msfreqs = ct.table(f"{msin.rstrip('/')}::SPECTRAL_WINDOW")
-    ref_freq = msfreqs.getcol("REF_FREQUENCY")[0]
-    msfreqs.close()
-    c = 0
-    for f_arr in freq_array:
-        if ref_freq > f_arr[0] and ref_freq < f_arr[1]:
-            c = c + 1
-        else:
-            c = c + 0
-
-    if c > 0:
-        valid = True
-    else:
-        valid = False
-    return valid
+    chanfreqs = msfreqs.getcol("CHAN_FREQ")
+    if (chanfreqs[0] > freq_array[0]) and (chanfreqs[-1] < freq_array[-1]):
+        return True
+    return False
 
 
 def get_dico_freqs(input_dir: str, solnames: str = "killMS.DIS2_full.sols.npz") -> list:
@@ -94,7 +84,9 @@ def get_dico_freqs(input_dir: str, solnames: str = "killMS.DIS2_full.sols.npz") 
     return freqs
 
 
-def get_prefactor_freqs(solname: str = "solutions.h5", solset: str = "target") -> list:
+def get_prefactor_freqs(
+    solname: str = "solutions.h5", solset: str = "target"
+) -> np.ndarray:
     """Extract frequency coverage from LINC solutions.
 
     Args:
@@ -110,15 +102,7 @@ def get_prefactor_freqs(solname: str = "solutions.h5", solset: str = "target") -
         xx for xx in st_names if ("extract" not in xx) and ("spinifex" not in xx)
     ][0]
     st = ss.getSoltab(ph_sol_name)
-    freqs = st.getAxisValues("freq")
-    freqstep = 1953125.0  ## the value for 10 subbands
-    f_arr = []
-    for xx in range(len(freqs)):
-        fmin = freqs[xx] - freqstep / 2.0
-        fmax = freqs[xx] + freqstep / 2.0
-        f_arr.append(np.array([fmin, fmax]))
-    sols.close()
-    return f_arr
+    return st.getAxisValues("freq")
 
 
 def get_reffreq(msfile: str) -> float:
