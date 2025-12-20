@@ -406,15 +406,13 @@ def delay_calibration(
     ] = "lotss_catalogue.csv",
     ATeam_skymodel: Annotated[
         Optional[cwl_file],
-        Option(
-            metavar="SKYMODEL",
+        Parameter(
             help="File path to the A-Team skymodel.",
         ),
     ] = os.path.join(os.environ["LINC_DATA_ROOT"], "skymodels/A-Team.skymodel"),
     rfi_strategy: Annotated[
         Optional[cwl_file],
-        Option(
-            metavar="RFISTRATEGY",
+        Parameter(
             help="File path to the strategy file for AOFlagger.",
         ),
     ] = os.path.join(
@@ -431,7 +429,7 @@ def delay_calibration(
         ),
     ] = os.path.join(os.environ["VLBI_DATA_ROOT"], "phaseup_config.txt"),
     ms_suffix: Annotated[
-        str, Option(help="Extension to look for when searching `mspath` for MSes.")
+        str, Parameter(help="Extension to look for when searching `mspath` for MSes.")
     ] = ".MS",
     solset: Annotated[
         Optional[cwl_file],
@@ -538,43 +536,43 @@ def delay_calibration(
     ] = None,
     config_only: Annotated[
         bool,
-        Option(help="Only generate the config file, do not run it."),
+        Parameter(help="Only generate the config file, do not run it."),
     ] = False,
     scheduler: Annotated[
         str,
-        Option(help="System scheduler to use."),
+        Parameter(help="System scheduler to use."),
     ] = "singleMachine",
     runner: Annotated[
         str,
-        Option(help="CWL runner to use."),
+        Parameter(help="CWL runner to use."),
     ] = "cwltool",
     rundir: Annotated[
         str,
-        Option(help="Directory to run in."),
+        Parameter(help="Directory to run in."),
     ] = os.getcwd(),
     slurm_queue: Annotated[
         str,
-        Option(help="Slurm queue to run jobs on."),
+        Parameter(help="Slurm queue to run jobs on."),
     ] = "",
     slurm_account: Annotated[
         str,
-        Option(help="Slurm account to use."),
+        Parameter(help="Slurm account to use."),
     ] = "",
     slurm_time: Annotated[
         str,
-        Option(help="Slurm time limit to use."),
+        Parameter(help="Slurm time limit to use."),
     ] = "72:00:00",
     container: Annotated[
         str,
-        Option(help="Apptainer container to use for cwltool runs."),
+        Parameter(help="Apptainer container to use for cwltool runs."),
     ] = "",
     restart: Annotated[
         bool,
-        Option(help="Restart a toil workflow."),
+        Parameter(help="Restart a toil workflow."),
     ] = False,
     record_toil_stats: Annotated[
         bool,
-        Option(
+        Parameter(
             help="Use Toil's stats flag to record statistics. N.B. this disables cleanup of successful steps; make sure there is enough disk space until the end of the run."
         ),
     ] = False,
@@ -631,7 +629,7 @@ def dd_calibration(
         ),
     ],
     ms_suffix: Annotated[
-        str, Option(help="Extension to look for when searching `mspath` for MSes.")
+        str, Parameter(help="Extension to look for when searching `mspath` for MSes.")
     ] = ".MS",
     delay_solset: Annotated[
         Optional[cwl_file],
@@ -689,39 +687,39 @@ def dd_calibration(
     ] = None,
     config_only: Annotated[
         bool,
-        Option(help="Only generate the config file, do not run it."),
+        Parameter(help="Only generate the config file, do not run it."),
     ] = False,
     scheduler: Annotated[
         str,
-        Option(help="System scheduler to use."),
+        Parameter(help="System scheduler to use."),
     ] = "singleMachine",
     runner: Annotated[
         str,
-        Option(help="CWL runner to use."),
+        Parameter(help="CWL runner to use."),
     ] = "cwltool",
     rundir: Annotated[
         str,
-        Option(help="Directory to run in."),
+        Parameter(help="Directory to run in."),
     ] = os.getcwd(),
     slurm_queue: Annotated[
         str,
-        Option(help="Slurm queue to run jobs on."),
+        Parameter(help="Slurm queue to run jobs on."),
     ] = "",
     slurm_account: Annotated[
         str,
-        Option(help="Slurm account to use."),
+        Parameter(help="Slurm account to use."),
     ] = "",
     slurm_time: Annotated[
         str,
-        Option(help="Slurm time limit to use."),
+        Parameter(help="Slurm time limit to use."),
     ] = "",
     container: Annotated[
         str,
-        Option(help="Apptainer container to use for cwltool runs."),
+        Parameter(help="Apptainer container to use for cwltool runs."),
     ] = "",
     restart: Annotated[
         bool,
-        Option(help="Restart a toil workflow."),
+        Parameter(help="Restart a toil workflow."),
     ] = False,
 ):
     args = locals()
@@ -768,7 +766,7 @@ def split_directions(
     h5merger: Annotated[cwl_dir, Parameter(help="The h5merger directory.")],
     selfcal: Annotated[cwl_dir, Parameter(help="The selfcal directory.")],
     ms_suffix: Annotated[
-        str, Option(help="Extension to look for when searching `mspath` for MSes.")
+        str, Parameter(help="Extension to look for when searching `mspath` for MSes.")
     ] = ".MS",
     image_cat: Annotated[
         cwl_file,
@@ -828,39 +826,39 @@ def split_directions(
     ] = 0.0,
     config_only: Annotated[
         bool,
-        Option(help="Only generate the config file, do not run it."),
+        Parameter(help="Only generate the config file, do not run it."),
     ] = False,
     scheduler: Annotated[
         str,
-        Option(help="System scheduler to use."),
+        Parameter(help="System scheduler to use."),
     ] = "singleMachine",
     runner: Annotated[
         str,
-        Option(help="CWL runner to use."),
+        Parameter(help="CWL runner to use."),
     ] = "cwltool",
     rundir: Annotated[
         str,
-        Option(help="Directory to run in."),
+        Parameter(help="Directory to run in."),
     ] = os.getcwd(),
     slurm_queue: Annotated[
         str,
-        Option(help="Slurm queue to run jobs on."),
+        Parameter(help="Slurm queue to run jobs on."),
     ] = "",
     slurm_account: Annotated[
         str,
-        Option(help="Slurm account to use."),
+        Parameter(help="Slurm account to use."),
     ] = "",
     slurm_time: Annotated[
         str,
-        Option(help="Slurm time limit to use."),
+        Parameter(help="Slurm time limit to use."),
     ] = "",
     container: Annotated[
         str,
-        Option(help="Apptainer container to use for cwltool runs."),
+        Parameter(help="Apptainer container to use for cwltool runs."),
     ] = "",
     restart: Annotated[
         bool,
-        Option(help="Restart a toil workflow."),
+        Parameter(help="Restart a toil workflow."),
     ] = False,
 ):
     args = locals()
@@ -917,7 +915,7 @@ def setup(
         ),
     ],
     ms_suffix: Annotated[
-        str, Option(help="Extension to look for when searching `mspath` for MSes.")
+        str, Parameter(help="Extension to look for when searching `mspath` for MSes.")
     ] = ".MS",
     filter_baselines: Annotated[
         Optional[str],
@@ -959,8 +957,7 @@ def setup(
     ] = ["VirA_Gaussian", "CygA_Gaussian", "CasA_Gaussian", "TauA_Gaussian"],
     ATeam_skymodel: Annotated[
         Optional[cwl_file],
-        Option(
-            metavar="SKYMODEL",
+        Parameter(
             help="File path to the A-Team skymodel.",
         ),
     ] = os.path.join(os.environ["LINC_DATA_ROOT"], "skymodels/A-Team.skymodel"),
@@ -972,39 +969,39 @@ def setup(
     ] = None,
     config_only: Annotated[
         bool,
-        Option(help="Only generate the config file, do not run it."),
+        Parameter(help="Only generate the config file, do not run it."),
     ] = False,
     scheduler: Annotated[
         str,
-        Option(help="System scheduler to use."),
+        Parameter(help="System scheduler to use."),
     ] = "singleMachine",
     runner: Annotated[
         str,
-        Option(help="CWL runner to use."),
+        Parameter(help="CWL runner to use."),
     ] = "cwltool",
     rundir: Annotated[
         str,
-        Option(help="Directory to run in."),
+        Parameter(help="Directory to run in."),
     ] = os.getcwd(),
     slurm_queue: Annotated[
         str,
-        Option(help="Slurm queue to run jobs on."),
+        Parameter(help="Slurm queue to run jobs on."),
     ] = "",
     slurm_account: Annotated[
         str,
-        Option(help="Slurm account to use."),
+        Parameter(help="Slurm account to use."),
     ] = "",
     slurm_time: Annotated[
         str,
-        Option(help="Slurm time limit to use."),
+        Parameter(help="Slurm time limit to use."),
     ] = "",
     container: Annotated[
         str,
-        Option(help="Apptainer container to use for cwltool runs."),
+        Parameter(help="Apptainer container to use for cwltool runs."),
     ] = "",
     restart: Annotated[
         bool,
-        Option(help="Restart a toil workflow."),
+        Parameter(help="Restart a toil workflow."),
     ] = False,
 ):
     args = locals()
@@ -1057,7 +1054,7 @@ def concatenate_flag(
         ),
     ],
     ms_suffix: Annotated[
-        str, Option(help="Extension to look for when searching `mspath` for MSes.")
+        str, Parameter(help="Extension to look for when searching `mspath` for MSes.")
     ] = ".MS",
     numbands: Annotated[
         Optional[int],
@@ -1085,39 +1082,39 @@ def concatenate_flag(
     ] = 15,
     config_only: Annotated[
         bool,
-        Option(help="Only generate the config file, do not run it."),
+        Parameter(help="Only generate the config file, do not run it."),
     ] = False,
     scheduler: Annotated[
         str,
-        Option(help="System scheduler to use."),
+        Parameter(help="System scheduler to use."),
     ] = "singleMachine",
     runner: Annotated[
         str,
-        Option(help="CWL runner to use."),
+        Parameter(help="CWL runner to use."),
     ] = "cwltool",
     rundir: Annotated[
         str,
-        Option(help="Directory to run in."),
+        Parameter(help="Directory to run in."),
     ] = os.getcwd(),
     slurm_queue: Annotated[
         str,
-        Option(help="Slurm queue to run jobs on."),
+        Parameter(help="Slurm queue to run jobs on."),
     ] = "",
     slurm_account: Annotated[
         str,
-        Option(help="Slurm account to use."),
+        Parameter(help="Slurm account to use."),
     ] = "",
     slurm_time: Annotated[
         str,
-        Option(help="Slurm time limit to use."),
+        Parameter(help="Slurm time limit to use."),
     ] = "",
     container: Annotated[
         str,
-        Option(help="Apptainer container to use for cwltool runs."),
+        Parameter(help="Apptainer container to use for cwltool runs."),
     ] = "",
     restart: Annotated[
         bool,
-        Option(help="Restart a toil workflow."),
+        Parameter(help="Restart a toil workflow."),
     ] = False,
 ):
     args = locals()
@@ -1181,7 +1178,7 @@ def phaseup_concat(
         ),
     ],
     ms_suffix: Annotated[
-        str, Option(help="Extension to look for when searching `mspath` for MSes.")
+        str, Parameter(help="Extension to look for when searching `mspath` for MSes.")
     ] = ".MS",
     numbands: Annotated[
         Optional[int],
@@ -1205,39 +1202,39 @@ def phaseup_concat(
     ] = 12,
     config_only: Annotated[
         bool,
-        Option(help="Only generate the config file, do not run it."),
+        Parameter(help="Only generate the config file, do not run it."),
     ] = False,
     scheduler: Annotated[
         str,
-        Option(help="System scheduler to use."),
+        Parameter(help="System scheduler to use."),
     ] = "singleMachine",
     runner: Annotated[
         str,
-        Option(help="CWL runner to use."),
+        Parameter(help="CWL runner to use."),
     ] = "cwltool",
     rundir: Annotated[
         str,
-        Option(help="Directory to run in."),
+        Parameter(help="Directory to run in."),
     ] = os.getcwd(),
     slurm_queue: Annotated[
         str,
-        Option(help="Slurm queue to run jobs on."),
+        Parameter(help="Slurm queue to run jobs on."),
     ] = "",
     slurm_account: Annotated[
         str,
-        Option(help="Slurm account to use."),
+        Parameter(help="Slurm account to use."),
     ] = "",
     slurm_time: Annotated[
         str,
-        Option(help="Slurm time limit to use."),
+        Parameter(help="Slurm time limit to use."),
     ] = "",
     container: Annotated[
         str,
-        Option(help="Apptainer container to use for cwltool runs."),
+        Parameter(help="Apptainer container to use for cwltool runs."),
     ] = "",
     restart: Annotated[
         bool,
-        Option(help="Restart a toil workflow."),
+        Parameter(help="Restart a toil workflow."),
     ] = False,
 ):
     args = locals()
