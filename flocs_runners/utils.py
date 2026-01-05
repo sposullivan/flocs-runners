@@ -23,8 +23,9 @@ def extract_obsid_from_ms(ms: str) -> str:
     return os.path.basename(ms).split("_")[0].lstrip("L")
 
 
-def cwl_file(entry: str) -> Optional[str]:
+def cwl_file(type_, tokens: Sequence[Token]) -> Optional[str]:
     """Create a CWL-friendly file entry."""
+    entry = tokens[0].value
     if entry is None:
         return None
     if entry.lower() == "null":
@@ -33,8 +34,9 @@ def cwl_file(entry: str) -> Optional[str]:
         return json.loads(f'{{"class": "File", "path":"{os.path.abspath(entry)}"}}')
 
 
-def cwl_dir(entry: str) -> Optional[str]:
+def cwl_dir(type_, tokens: Sequence[Token]) -> Optional[str]:
     """Create a CWL-friendly file entry."""
+    entry = tokens[0].value
     if entry is None:
         return None
     if entry.lower() == "null":
