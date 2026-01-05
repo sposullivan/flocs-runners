@@ -571,7 +571,7 @@ def delay_calibration(
             help="Optional starting models in BBS-compatible text format for starting delay calibration.",
             converter=cwl_file,
         ),
-    ] = {},
+    ] = [],
     config_only: Annotated[
         bool,
         Parameter(help="Only generate the config file, do not run it."),
