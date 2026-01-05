@@ -416,7 +416,7 @@ def delay_calibration(
         str,
         [
             Token(
-                os.path.join(os.environ["LINC_DATA_ROOT"], "skymodels/A-Team.skymodel")
+                value=os.path.join(os.environ["LINC_DATA_ROOT"], "skymodels/A-Team.skymodel")
             )
         ],
     ),
