@@ -59,7 +59,7 @@ def check_dd_freq(msin: str, freq_array: Union[list, np.ndarray]) -> bool:
         True if input frequencies are covered, False if input has frequencies that fall outside freq_array.
     """
     msfreqs = ct.table(f"{msin.rstrip('/')}::SPECTRAL_WINDOW")
-    chanfreqs = msfreqs.getcol("CHAN_FREQ")
+    chanfreqs = msfreqs.getcol("CHAN_FREQ").squeeze()
     if (chanfreqs[0] > freq_array[0]) and (chanfreqs[-1] < freq_array[-1]):
         return True
     return False
