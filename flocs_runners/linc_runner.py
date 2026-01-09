@@ -918,7 +918,7 @@ def target(
         Optional[str], Parameter(help="Concat averaging frequency resolution.")
     ] = "97.64kHz",
     num_SBs_per_group: Annotated[
-        Optional[int], Parameter(help="Number of SBs per group.")
+        Optional[int], Parameter(name="--num-sbs-per-group", help="Number of SBs per group.")
     ] = None,
     calib_nchan: Annotated[Optional[int], Parameter(help="Calibration channels.")] = 1,
     reference_stationSB: Annotated[
