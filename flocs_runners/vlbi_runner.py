@@ -741,7 +741,7 @@ def dd_calibration(
         Parameter(help="Peak flux (Jy/beam) cut to pre-select sources from catalogue."),
     ] = 0.025,
     model_cache: Annotated[
-        str,
+        Optional[str],
         Parameter(help="Neural network cache directory."),
     ] = None,
     config_only: Annotated[
