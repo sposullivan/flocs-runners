@@ -95,7 +95,9 @@ class VLBIJSONConfig:
                 short_name = "_".join(os.path.basename(ms["path"]).split("_")[:2])
                 if short_name not in ddf_names_short:
                     idx_nosols.add(idx)
-                    logger.info(f"Removing {os.path.basename(ms['path'])} because no ddf-pipeline solutions")
+                    logger.info(
+                        f"Removing {os.path.basename(ms['path'])} because no ddf-pipeline solutions"
+                    )
             self.configdict["msin"] = [
                 ms
                 for i, ms in enumerate(self.configdict["msin"])
@@ -783,6 +785,10 @@ def dd_calibration(
         str,
         Parameter(help="Directory to run in."),
     ] = os.getcwd(),
+    outdir: Annotated[
+        str,
+        Parameter(help="Directory to move outputs to."),
+    ] = os.getcwd(),
     slurm_queue: Annotated[
         str,
         Parameter(help="Slurm queue to run jobs on."),
@@ -803,13 +809,16 @@ def dd_calibration(
         bool,
         Parameter(help="Restart a toil workflow."),
     ] = False,
+    record_toil_stats: Annotated[
+        bool,
+        Parameter(
+            help="Use Toil's stats flag to record statistics. N.B. this disables cleanup of successful steps; make sure there is enough disk space until the end of the run."
+        ),
+    ] = False,
 ):
     args = locals()
     logger.info("Generating VLBI dd-calibration config")
-    config = VLBIJSONConfig(
-        args["mspath"],
-        ms_suffix=args["ms_suffix"],
-    )
+    config = VLBIJSONConfig(args["mspath"], ms_suffix=args["ms_suffix"], outdir=outdir)
     unneeded_keys = [
         "mspath",
         "config_only",
@@ -820,6 +829,7 @@ def dd_calibration(
         "slurm_account",
         "slurm_time",
         "container",
+        "record_toil_stats",
     ]
     args_for_linc = args.copy()
     for key in unneeded_keys:
@@ -839,6 +849,7 @@ def dd_calibration(
             workdir=args["rundir"],
             container=args["container"],
             restart=args["restart"],
+            record_stats=args["record_toil_stats"],
         )
 
 
