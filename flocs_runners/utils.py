@@ -8,6 +8,7 @@ from pathlib import Path
 from subprocess import CalledProcessError
 from typing import Optional, Sequence, Union
 
+from astropy.coordinates import SkyCoord
 import casacore.tables as ct
 import numpy as np
 import spinifex
@@ -270,3 +271,35 @@ def get_container_env_var(var: str) -> str:
         return os.environ[app_var]
     else:
         return ""
+
+
+def ra_dec_to_iltj(ra_deg, dec_deg):
+    """
+    Convert RA/DEC floats to ILTJ source name format: ILTJhhmmss.ss±ddmmss.s
+
+    Args:
+        ra_deg (float): Right Ascension in degrees
+        dec_deg (float): Declination in degrees
+
+    Returns:
+        str: Source name in ILTJhhmmss.ss±ddmmss.s format
+    """
+
+    coord = SkyCoord(ra=ra_deg * u.degree, dec=dec_deg * u.degree, frame="icrs")
+
+    ra_h = int(coord.ra.hms.h)  # Hours component
+    ra_m = int(coord.ra.hms.m)  # Minutes component
+    ra_s = coord.ra.hms.s  # Seconds component
+
+    sign = "+" if coord.dec.deg >= 0 else "-"  # Sign character
+    dec_d = int(abs(coord.dec.dms.d))  # Degrees component
+    dec_m = int(coord.dec.dms.m)  # Minutes component
+    dec_s = coord.dec.dms.s  # Seconds component
+
+    # Build the formatted ILTJ string
+    source_name = (
+        f"ILTJ"
+        f"{ra_h:02d}{ra_m:02d}{ra_s:05.2f}"
+        f"{sign}{dec_d:02d}{dec_m:02d}{dec_s:04.1f}"
+    )
+    return source_name

@@ -6,18 +6,20 @@ from .utils import (
     extract_obsid_from_ms,
     get_container_env_var,
     get_prefactor_freqs,
+    ra_dec_to_iltj,
     setup_toil_slurm,
     verify_slurm_environment_toil,
-    verify_toil,
 )
 import glob
 import json
 import os
+import re
 import sys
 import shutil
 import structlog
 import subprocess
 import tempfile
+from astropy.table import Table
 from time import gmtime, strftime
 from cyclopts import App, Parameter, Token
 from enum import Enum
@@ -805,6 +807,24 @@ def dd_calibration(
         ),
     ] = False,
 ):
+    cat = Table.read(source_catalogue["path"])
+    cat_modified = False
+    for source in cat:
+        try:
+            parsed_input = re.findall(
+                r"ILTJ\d{6}\.\d{2}[+\-]\d{6}\.\d{1}", source["Source_Name"]
+            )[0]
+        except IndexError:
+            newname = ra_dec_to_iltj(source["RA"], source["DEC"])
+            logger.info(
+                f"Source {source['Source_Name']} does not adhere to ILTJhhmmss.ss+ddmmss.s convention. It will be renamed to {newname} to avoid matching problems."
+            )
+            source["Source_Name"] = newname
+            cat_modified = True
+    if cat_modified:
+        shutil.copy(source_catalogue["path"], source_catalogue["path"] + ".bkp")
+        cat.write(source_catalogue, overwrite=True)
+
     args = locals()
     logger.info("Generating VLBI dd-calibration config")
     config = VLBIJSONConfig(args["mspath"], ms_suffix=args["ms_suffix"], outdir=outdir)
