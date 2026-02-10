@@ -1034,7 +1034,7 @@ def polarization_imaging(
     rmtools_extra_args: Annotated[
         Optional[str],
         Parameter(help="Extra arguments passed to rmsynth3d."),
-    ] = "target",
+    ],
     config_only: Annotated[
         bool,
         Parameter(help="Only generate the config file, do not run it."),
