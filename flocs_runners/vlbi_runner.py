@@ -23,7 +23,7 @@ from astropy.table import Table
 from time import gmtime, strftime
 from cyclopts import App, Parameter, Token
 from enum import Enum
-from typing import List, Optional
+from typing import List, Optional, Tuple
 from typing_extensions import Annotated, Literal
 
 
@@ -34,6 +34,7 @@ class VLBIJSONConfig:
         DELAY = "delay-calibration"
         DD_CALIBRATION = "dd-calibration"
         SPLIT_DIRECTIONS = "split-directions"
+        POLARIZATION_IMAGING = "polarization-imaging"
         SETUP = "setup"
         CONCATENATE_FLAG = "concatenate-flag"
         PHASEUP_CONCAT = "phaseup-concat"
@@ -162,6 +163,8 @@ class VLBIJSONConfig:
             self.mode = self.OBS_TYPE.DD_CALIBRATION
         elif "split" in self.configfile:
             self.mode = self.OBS_TYPE.SPLIT_DIRECTIONS
+        elif "polarization" in self.configfile:
+            self.mode = self.OBS_TYPE.POLARIZATION_IMAGING
         elif "setup" in self.configfile:
             self.mode = self.OBS_TYPE.SETUP
         elif "concatenate-flag" in self.configfile:
@@ -980,6 +983,113 @@ def split_directions(
     for key, val in args_for_linc.items():
         config.add_entry(key, val)
     config.save("mslist_VLBI_split-directions.json")
+    if not args["config_only"]:
+        config.run_workflow(
+            runner=args["runner"],
+            scheduler=args["scheduler"],
+            slurm_params={
+                "queue": args["slurm_queue"],
+                "account": args["slurm_account"],
+                "time": args["slurm_time"],
+            },
+            workdir=args["rundir"],
+            restart=args["restart"],
+        )
+
+@app.command()
+def polarization_imaging(
+    msin: Annotated[str, Parameter(help="Directory where MS is located.")],
+    pixel_scale: Annotated[
+        Optional[float],
+        Parameter(help="Pixel sampling for imaging in WSClean"),
+    ] = 0.075,
+    resolution: Annotated[
+        Optional[str],
+        Parameter(help="Gaussian taper for shaping the PSF in WSClean"),
+    ] = "0.3arcsec",
+    image_size: Annotated[
+        Tuple[int,int],
+        Parameter(help="Image size in number of pixels [x,y]"),
+    ] = [2000 2000],
+    num_channels: Annotated[
+        Optional[int],
+        Parameter(help="The number of channels to image for each Stokes"),
+    ] = 480,
+    stokes: Annotated[
+        Optional[str],
+        Parameter(help="Stokes to image. Any combination of I, Q, U, and V"),
+    ] = "IQUV",
+    rmtools_max_lam2: Annotated[
+        Optional[float],
+        Parameter(help="Maximum lambda-squared value for rmsynth3d (-l)."),
+    ] = 150,
+    rmtools_dlam2: Annotated[
+        Optional[float],
+        Parameter(help="Lambda-squared channel width for rmsynth3d (-d)."),
+    ] = 0.3,
+    rmtools_output_prefix: Annotated[
+        Optional[str],
+        Parameter(help="Prefix for RM-Tools output products. Defaults to Stokes Q basename."),
+    ] = "target",
+    rmtools_extra_args: Annotated[
+        Optional[str],
+        Parameter(help="Extra arguments passed to rmsynth3d."),
+    ] = "target",
+    config_only: Annotated[
+        bool,
+        Parameter(help="Only generate the config file, do not run it."),
+    ] = False,
+    scheduler: Annotated[
+        str,
+        Parameter(help="System scheduler to use."),
+    ] = "singleMachine",
+    runner: Annotated[
+        str,
+        Parameter(help="CWL runner to use."),
+    ] = "cwltool",
+    rundir: Annotated[
+        str,
+        Parameter(help="Directory to run in."),
+    ] = os.getcwd(),
+    slurm_queue: Annotated[
+        str,
+        Parameter(help="Slurm queue to run jobs on."),
+    ] = "",
+    slurm_account: Annotated[
+        str,
+        Parameter(help="Slurm account to use."),
+    ] = "",
+    slurm_time: Annotated[
+        str,
+        Parameter(help="Slurm time limit to use."),
+    ] = "",
+    restart: Annotated[
+        bool,
+        Parameter(help="Restart a toil workflow."),
+    ] = False,
+):
+    args = locals()
+    logger.info("Generating VLBI split-directions config")
+    config = VLBIJSONConfig(
+        args["mspath"],
+        ms_suffix=args["ms_suffix"],
+    )
+    unneeded_keys = [
+        "mspath",
+        "config_only",
+        "scheduler",
+        "runner",
+        "rundir",
+        "slurm_queue",
+        "slurm_account",
+        "slurm_time",
+    ]
+    args_for_linc = args.copy()
+    for key in unneeded_keys:
+        args_for_linc.pop(key)
+    for key, val in args_for_linc.items():
+        config.add_entry(key, val)
+    config.save("mslist_VLBI_polarization-imaging.json")
     if not args["config_only"]:
         config.run_workflow(
             runner=args["runner"],
