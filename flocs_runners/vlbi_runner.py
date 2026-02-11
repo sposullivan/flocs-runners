@@ -1034,7 +1034,7 @@ def polarization_imaging(
     rmtools_extra_args: Annotated[
         Optional[str],
         Parameter(help="Extra arguments passed to rmsynth3d."),
-    ],
+    ] = None,
     config_only: Annotated[
         bool,
         Parameter(help="Only generate the config file, do not run it."),
@@ -1069,13 +1069,12 @@ def polarization_imaging(
     ] = False,
 ):
     args = locals()
-    logger.info("Generating VLBI split-directions config")
+    logger.info("Generating VLBI polarization-imaging config")
     config = VLBIJSONConfig(
-        args["mspath"],
-        ms_suffix=args["ms_suffix"],
+        args["msin"],
     )
     unneeded_keys = [
-        "mspath",
+        "msin",
         "config_only",
         "scheduler",
         "runner",
