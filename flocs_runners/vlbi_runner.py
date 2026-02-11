@@ -1085,7 +1085,7 @@ def polarization_imaging(
     logger.info("Generating VLBI polarization-imaging config")
     config = VLBIJSONConfig(
         mspath=None,
-        args["msin"],
+        msin=args["msin"],
     )
     unneeded_keys = [
         "mspath",
