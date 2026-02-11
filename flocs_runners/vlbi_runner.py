@@ -25,7 +25,7 @@ from cyclopts import App, Parameter, Token
 from enum import Enum
 from typing import List, Optional, Tuple
 from typing import List, Optional, Tuple, Annotated, Literal
-from typing_extensions import Annotated, Literal
+#from typing_extensions import Annotated, Literal
 
 
 class VLBIJSONConfig:
