@@ -58,9 +58,19 @@ class VLBIJSONConfig:
         self.configdict = {}
         self.outdir = outdir
 
-        filedir = os.path.join(mspath, f"*{ms_suffix}")
-        logger.info(f"Searching {filedir}")
-        files = sorted(glob.glob(filedir))
+        if os.path.isdir(mspath):
+            #For delay calibration and split target workflows
+            filedir = os.path.join(mspath, f"*{ms_suffix}")
+            logger.info(f"Searching {filedir}")
+            files = sorted(glob.glob(filedir))
+        elif os.path.isfile(mspath):
+            #For polarization imaging workflow
+            files=[mspath]
+            logger.info(f"Using provided ms file: {mspath}")
+        else:
+            logger.critical(f"Input path does not exist: {mspath}")
+            sys.exit(-1)
+            
         logger.info(f"Found {len(files)} files")
 
         if (not prefac_h5parm) or (
