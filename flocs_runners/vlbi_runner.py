@@ -258,7 +258,9 @@ class VLBIJSONConfig:
                 + "--parallel "
                 + "--timestamps "
                 + "--disable-pull "
-                + "--singularity "
+                #+ "--singularity " # argument --no-container: not allowed with argument --singularity
+                + "--preserve-entire-environment " # fix to run wsclean locally without openblas error
+                + "--no-container "
                 + f"--tmpdir-prefix={os.environ['APPTAINERENV_TMPDIR']} "
                 + f"--outdir={os.environ['APPTAINERENV_RESULTSDIR']} "
                 + f"--log-dir={os.environ['APPTAINERENV_LOGSDIR']} "
@@ -1014,8 +1016,12 @@ def polarization_imaging(
     msin: Annotated[str, Parameter(help="Directory where MS is located.")],
     pixel_scale: Annotated[
         Optional[str],
-        Parameter(help="Pixel sampling for imaging in WSClean"),
-    ] = "0.075arcsec",
+        Parameter(help="Pixel sampling for imaging in WSClean (e.g. 0.075asec)"),
+    ] = "0.075asec",
+    #pixel_scale: Annotated[
+    #    Optional[float],
+    #    Parameter(help="Pixel sampling for imaging in WSClean"),
+    #] = 0.075,
     resolution: Annotated[
         Optional[str],
         Parameter(help="Gaussian taper for shaping the PSF in WSClean"),
@@ -1088,7 +1094,7 @@ def polarization_imaging(
         msin=args["msin"],
     )
     unneeded_keys = [
-        "mspath",
+        "msin", #"mspath",
         "config_only",
         "scheduler",
         "runner",
@@ -1099,7 +1105,7 @@ def polarization_imaging(
     ]
     args_for_linc = args.copy()
     for key in unneeded_keys:
-        args_for_linc.pop(key,None)
+        args_for_linc.pop(key)
     for key, val in args_for_linc.items():
         config.add_entry(key, val)
     config.save("mslist_VLBI_polarization-imaging.json")
@@ -1231,7 +1237,7 @@ def setup(
         prefac_h5parm=args["solset"],
     )
     unneeded_keys = [
-        "msin",
+        "mspath",
         "config_only",
         "scheduler",
         "runner",
