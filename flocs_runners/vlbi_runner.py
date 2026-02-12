@@ -1099,7 +1099,7 @@ def polarization_imaging(
     ]
     args_for_linc = args.copy()
     for key in unneeded_keys:
-        args_for_linc.pop(key)
+        args_for_linc.pop(key,None)
     for key, val in args_for_linc.items():
         config.add_entry(key, val)
     config.save("mslist_VLBI_polarization-imaging.json")
